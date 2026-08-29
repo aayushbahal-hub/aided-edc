@@ -110,12 +110,14 @@ if not filtered.empty:
         try:
             import sys
             sys.path.insert(0, str(BASE_DIR))
-            from models.predict import render_mol_svg
-            svg = render_mol_svg(row.smiles)
-            if svg:
-                st.markdown(svg, unsafe_allow_html=True)
-        except Exception:
-            st.info("Install RDKit to view 2D structures.")
+            from models.predict import mol_to_image
+            img = mol_to_image(row.smiles, width=380, height=280)
+            if img:
+                st.image(img, caption=f"2D Structure: {row.chemical_name}", use_column_width=True)
+            else:
+                st.info("Structure depiction not available for this SMILES.")
+        except Exception as e:
+            st.info(f"Could not render 2D structure: {e}")
 
         # Bioactivity detail
         conn = sqlite3.connect(DB_PATH)

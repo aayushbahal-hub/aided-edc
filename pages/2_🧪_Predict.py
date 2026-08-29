@@ -23,28 +23,37 @@ EXAMPLES = {
     "PFOA":             "OC(=O)CCCCCCC(F)(F)F",
 }
 
+if "selected_smiles" not in st.session_state:
+    st.session_state["selected_smiles"] = "CC(C)(c1ccc(O)cc1)c1ccc(O)cc1"
+
 col_input, col_examples = st.columns([3, 1])
-with col_input:
-    smiles_input = st.text_area("Enter SMILES", height=80, placeholder="e.g. CC(C)(c1ccc(O)cc1)c1ccc(O)cc1")
 with col_examples:
     st.markdown("**Quick Examples**")
     for name, smi in EXAMPLES.items():
-        if st.button(name, key=f"ex_{name}"):
-            smiles_input = smi
+        if st.button(name, key=f"ex_{name}", use_container_width=True):
+            st.session_state["selected_smiles"] = smi
+
+with col_input:
+    smiles_input = st.text_area(
+        "Enter SMILES",
+        value=st.session_state.get("selected_smiles", ""),
+        height=80,
+        placeholder="e.g. CC(C)(c1ccc(O)cc1)c1ccc(O)cc1"
+    )
 
 predict_btn = st.button("🔮 Predict Activity", type="primary", use_container_width=True)
 
-if predict_btn and smiles_input.strip():
-    with st.spinner("Running QSAR models..."):
+if (predict_btn or smiles_input) and smiles_input.strip():
+    with st.spinner("Running QSAR models & analyzing structure..."):
         try:
-            from models.predict import predict_all, compute_descriptors, render_mol_svg
+            from models.predict import predict_all, compute_descriptors, mol_to_image
         except ImportError:
             st.error("Prediction module not found. Ensure models/predict.py exists.")
             st.stop()
 
         results = predict_all(smiles_input.strip())
         descriptors = compute_descriptors(smiles_input.strip())
-        svg = render_mol_svg(smiles_input.strip())
+        mol_img = mol_to_image(smiles_input.strip(), width=400, height=300)
 
     if "error" in results:
         st.error(results["error"])
@@ -54,10 +63,10 @@ if predict_btn and smiles_input.strip():
 
     with col_str:
         st.markdown("### 🔬 2D Structure")
-        if svg:
-            st.markdown(svg, unsafe_allow_html=True)
+        if mol_img:
+            st.image(mol_img, caption="2D Chemical Depiction", use_column_width=True)
         else:
-            st.info("Could not render structure.")
+            st.info("Structure depiction not available for this SMILES.")
 
     with col_pred:
         st.markdown("### 🎯 Predicted Activity")

@@ -104,15 +104,30 @@ def compute_descriptors(smiles: str) -> dict:
         return {}
 
 
+def mol_to_image(smiles: str, width: int = 380, height: int = 300):
+    """Render 2D molecular structure as a PIL Image."""
+    try:
+        from rdkit import Chem
+        from rdkit.Chem import Draw, rdDepictor
+        mol = Chem.MolFromSmiles(smiles)
+        if mol is None:
+            return None
+        rdDepictor.Compute2DCoords(mol)
+        return Draw.MolToImage(mol, size=(width, height))
+    except Exception:
+        return None
+
+
 def render_mol_svg(smiles: str, width=300, height=250) -> str:
     """Render a 2D molecular structure as SVG string."""
     try:
         from rdkit import Chem
-        from rdkit.Chem import Draw
+        from rdkit.Chem import Draw, rdDepictor
         from rdkit.Chem.Draw import rdMolDraw2D
         mol = Chem.MolFromSmiles(smiles)
         if mol is None:
             return ""
+        rdDepictor.Compute2DCoords(mol)
         drawer = rdMolDraw2D.MolDraw2DSVG(width, height)
         drawer.drawOptions().addStereoAnnotation = True
         drawer.DrawMolecule(mol)
