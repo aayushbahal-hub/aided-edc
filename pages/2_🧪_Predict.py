@@ -2,11 +2,21 @@
 AIDED-EDC — QSAR Predictor Page
 """
 import streamlit as st
+import os
 import sys
 from pathlib import Path
 
+# Ensure project root is in sys.path
 BASE_DIR = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(BASE_DIR))
+ROOT_PATH = str(BASE_DIR)
+if ROOT_PATH not in sys.path:
+    sys.path.insert(0, ROOT_PATH)
+
+try:
+    from models.predict import predict_all, compute_descriptors, mol_to_image
+    PREDICT_IMPORT_ERROR = None
+except Exception as e:
+    PREDICT_IMPORT_ERROR = str(e)
 
 st.set_page_config(page_title="QSAR Predictor | AIDED-EDC", page_icon="🧪", layout="wide")
 
@@ -44,13 +54,11 @@ with col_input:
 predict_btn = st.button("🔮 Predict Activity", type="primary", use_container_width=True)
 
 if (predict_btn or smiles_input) and smiles_input.strip():
-    with st.spinner("Running QSAR models & analyzing structure..."):
-        try:
-            from models.predict import predict_all, compute_descriptors, mol_to_image
-        except ImportError:
-            st.error("Prediction module not found. Ensure models/predict.py exists.")
-            st.stop()
+    if PREDICT_IMPORT_ERROR:
+        st.error(f"Prediction module error: {PREDICT_IMPORT_ERROR}")
+        st.stop()
 
+    with st.spinner("Running QSAR models & analyzing structure..."):
         results = predict_all(smiles_input.strip())
         descriptors = compute_descriptors(smiles_input.strip())
         mol_img = mol_to_image(smiles_input.strip(), width=400, height=300)

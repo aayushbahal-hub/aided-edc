@@ -2,11 +2,14 @@
 AIDED-EDC — AI Assistant Chat Page
 """
 import streamlit as st
+import os
 import sys
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(BASE_DIR))
+ROOT_PATH = str(BASE_DIR)
+if ROOT_PATH not in sys.path:
+    sys.path.insert(0, ROOT_PATH)
 
 st.set_page_config(page_title="AI Assistant | AIDED-EDC", page_icon="🤖", layout="wide")
 

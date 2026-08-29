@@ -5,12 +5,15 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 import numpy as np
-from pathlib import Path
+import os
 import sys
 import tempfile
+from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(BASE_DIR))
+ROOT_PATH = str(BASE_DIR)
+if ROOT_PATH not in sys.path:
+    sys.path.insert(0, ROOT_PATH)
 DB_PATH = BASE_DIR / "database" / "aided_edc.db"
 
 st.set_page_config(page_title="Network | AIDED-EDC", page_icon="🕸️", layout="wide")
